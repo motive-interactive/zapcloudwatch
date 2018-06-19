@@ -63,7 +63,11 @@ func (ch *CloudwatchHook) GetHook() (func(zapcore.Entry) error, error) {
 		return ch.sendEvent(params)
 	}
 
-	ch.svc = cloudwatchlogs.New(session.New(ch.AWSConfig))
+	awsSession, err := session.NewSession(ch.AWSConfig)
+	if err != nil {
+		return nil, err
+	}
+	ch.svc = cloudwatchlogs.New(awsSession)
 
 	lgresp, err := ch.svc.DescribeLogGroups(&cloudwatchlogs.DescribeLogGroupsInput{LogGroupNamePrefix: aws.String(ch.GroupName), Limit: aws.Int64(1)})
 	if err != nil {
